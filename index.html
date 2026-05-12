@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CGPA / SGPA Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #e0e0f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+      color: #a78bfa;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b6b8a;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2d2d4a;
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 720px;
+      margin: 0 auto 1.5rem auto;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      color: #a78bfa;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .prev-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: #8080a8;
+      margin-bottom: 0.35rem;
+    }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      background: #11112a;
+      border: 1px solid #3a3a5c;
+      color: #e0e0f0;
+      border-radius: 7px;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #a78bfa;
+    }
+
+    /* Course table */
+    #course-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    #course-table thead th {
+      text-align: left;
+      padding: 0.45rem 0.5rem;
+      color: #6b6b8a;
+      font-weight: 600;
+      border-bottom: 1px solid #2d2d4a;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    #course-table tbody tr {
+      border-bottom: 1px solid #1e1e38;
+    }
+
+    #course-table tbody td {
+      padding: 0.4rem 0.4rem;
+    }
+
+    #course-table input, #course-table select {
+      padding: 0.4rem 0.5rem;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0 0.3rem;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .delete-btn:hover { opacity: 1; }
+
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button.add-btn {
+      background: #2d2d4a;
+      color: #a78bfa;
+      border: 1px solid #a78bfa44;
+      border-radius: 7px;
+      padding: 0.5rem 1.1rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.2s;
+    }
+    button.add-btn:hover { background: #3a3a5c; }
+
+    button.calc-btn {
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.5rem 1.4rem;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: background 0.2s;
+      margin-left: auto;
+    }
+    button.calc-btn:hover { background: #6d28d9; }
+
+    /* Results */
+    #results {
+      display: none;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .result-box {
+      background: #1a1a2e;
+      border: 1px solid #2d2d4a;
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      text-align: center;
+    }
+
+    .result-box .label {
+      font-size: 0.8rem;
+      color: #8080a8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+
+    .result-box .value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+
+    .result-box .sub {
+      font-size: 0.75rem;
+      color: #6b6b8a;
+      margin-top: 0.2rem;
+    }
+
+    /* Grade ref */
+    details {
+      max-width: 720px;
+      margin: 0 auto 1.5rem auto;
+    }
+
+    summary {
+      cursor: pointer;
+      color: #6b6b8a;
+      font-size: 0.82rem;
+      user-select: none;
+    }
+
+    .grade-ref {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+
+    .grade-pill {
+      background: #1a1a2e;
+      border: 1px solid #2d2d4a;
+      border-radius: 20px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.8rem;
+      color: #a78bfa;
+    }
+
+    .error {
+      color: #f87171;
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>CGPA / SGPA Calculator</h1>
+<p class="subtitle">Enter your previous cumulative data and current semester courses</p>
+
+<!-- Grade reference -->
+<details>
+  <summary>IIT Delhi grade scale reference &#9660;</summary>
+  <div class="grade-ref">
+    <span class="grade-pill">A = 10</span>
+    <span class="grade-pill">A- = 9</span>
+    <span class="grade-pill">B = 8</span>
+    <span class="grade-pill">B- = 7</span>
+    <span class="grade-pill">C = 6</span>
+    <span class="grade-pill">C- = 5</span>
+    <span class="grade-pill">D = 4</span>
+    <span class="grade-pill">F = 0</span>
+  </div>
+</details>
+
+<!-- Previous semester summary -->
+<div class="card">
+  <h2>Previous Semesters (cumulative)</h2>
+  <div class="prev-row">
+    <div class="field">
+      <label>Total credits earned so far</label>
+      <input type="number" id="prev-credits" min="0" placeholder="e.g. 90" />
+    </div>
+    <div class="field">
+      <label>Total credit × grade points earned so far</label>
+      <input type="number" id="prev-points" min="0" step="0.01" placeholder="e.g. 765.0" />
+    </div>
+  </div>
+  <p style="font-size:0.75rem; color:#6b6b8a; margin-top:0.7rem;">
+    These are the running totals from all previous semesters (shown on your grade card).
+    Leave both as 0 if this is your first semester.
+  </p>
+</div>
+
+<!-- Current semester courses -->
+<div class="card">
+  <h2>Current Semester Courses</h2>
+  <table id="course-table">
+    <thead>
+      <tr>
+        <th style="width:38%">Course name</th>
+        <th style="width:15%">Credits</th>
+        <th style="width:20%">Grade</th>
+        <th style="width:18%">Grade pts</th>
+        <th style="width:9%"></th>
+      </tr>
+    </thead>
+    <tbody id="course-body">
+      <!-- rows injected by JS -->
+    </tbody>
+  </table>
+
+  <div class="btn-row">
+    <button class="add-btn" onclick="addRow()">+ Add course</button>
+    <button class="calc-btn" onclick="calculate()">Calculate</button>
+  </div>
+  <div id="error" class="error"></div>
+</div>
+
+<!-- Results -->
+<div id="results">
+  <div class="results-grid">
+    <div class="result-box">
+      <div class="label">SGPA</div>
+      <div class="value" id="sgpa-val">—</div>
+      <div class="sub" id="sgpa-sub"></div>
+    </div>
+    <div class="result-box">
+      <div class="label">CGPA</div>
+      <div class="value" id="cgpa-val">—</div>
+      <div class="sub" id="cgpa-sub"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const GRADE_MAP = {
+    'A': 10, 'A-': 9,
+    'B': 8, 'B-': 7,
+    'C': 6, 'C-': 5,
+    'D': 4, 'F': 0
+  };
+
+  function gradeOptions(selected = '') {
+    return ['', 'A','A-','B','B-','C','C-','D','F']
+      .map(g => `<option value="${g}" ${g === selected ? 'selected' : ''}>${g || '— select —'}</option>`)
+      .join('');
+  }
+
+  function addRow(name = '', credits = '', grade = '', pts = '') {
+    const tbody = document.getElementById('course-body');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="c-name" value="${name}" placeholder="Course name" oninput="saveData()" /></td>
+      <td><input type="number" class="c-credits" min="0" step="0.5" value="${credits}" placeholder="3" oninput="saveData()" /></td>
+      <td>
+        <select class="c-grade" onchange="syncPts(this)">
+          ${gradeOptions(grade)}
+        </select>
+      </td>
+      <td><input type="number" class="c-pts" min="0" max="10" step="0.01" value="${pts}" placeholder="0–10" oninput="saveData()" /></td>
+      <td><button class="delete-btn" onclick="this.closest('tr').remove(); saveData();" title="Remove">&#x2715;</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function syncPts(sel) {
+    const pts = GRADE_MAP[sel.value];
+    const ptsInput = sel.closest('tr').querySelector('.c-pts');
+    if (pts !== undefined) ptsInput.value = pts;
+    saveData();
+  }
+
+  function saveData() {
+    const rows = document.querySelectorAll('#course-body tr');
+    const courses = Array.from(rows).map(row => ({
+      name:    row.querySelector('.c-name').value,
+      credits: row.querySelector('.c-credits').value,
+      grade:   row.querySelector('.c-grade').value,
+      pts:     row.querySelector('.c-pts').value,
+    }));
+    localStorage.setItem('cgpa_courses', JSON.stringify(courses));
+    localStorage.setItem('cgpa_prev_credits', document.getElementById('prev-credits').value);
+    localStorage.setItem('cgpa_prev_points',  document.getElementById('prev-points').value);
+  }
+
+  const DEFAULT_COURSES = [
+    { name: 'COL216', credits: '4' },
+    { name: 'COL226', credits: '5' },
+    { name: 'COP290', credits: '3' },
+    { name: 'HUL253', credits: '4' },
+    { name: 'SBL100', credits: '4' },
+    { name: 'ELL205', credits: '4' },
+    { name: 'VEV737', credits: '1' },
+    { name: 'VEV738', credits: '1' },
+  ];
+
+  function loadData() {
+    const prevCredits = localStorage.getItem('cgpa_prev_credits');
+    const prevPoints  = localStorage.getItem('cgpa_prev_points');
+    document.getElementById('prev-credits').value = prevCredits ?? '57';
+    document.getElementById('prev-points').value  = prevPoints  ?? '471';
+
+    const saved = localStorage.getItem('cgpa_courses');
+    if (saved) {
+      JSON.parse(saved).forEach(c => addRow(c.name, c.credits, c.grade, c.pts));
+    } else {
+      DEFAULT_COURSES.forEach(c => addRow(c.name, c.credits));
+    }
+  }
+
+  function calculate() {
+    document.getElementById('error').textContent = '';
+
+    const prevCredits = parseFloat(document.getElementById('prev-credits').value) || 0;
+    const prevPoints  = parseFloat(document.getElementById('prev-points').value)  || 0;
+
+    const rows = document.querySelectorAll('#course-body tr');
+    if (rows.length === 0) {
+      document.getElementById('error').textContent = 'Add at least one course.';
+      return;
+    }
+
+    let semCredits = 0, semPoints = 0;
+    let valid = true;
+
+    rows.forEach(row => {
+      const credits = parseFloat(row.querySelector('.c-credits').value);
+      const pts     = parseFloat(row.querySelector('.c-pts').value);
+      if (isNaN(credits) || credits <= 0) { valid = false; return; }
+      if (isNaN(pts) || pts < 0 || pts > 10) { valid = false; return; }
+      semCredits += credits;
+      semPoints  += credits * pts;
+    });
+
+    if (!valid) {
+      document.getElementById('error').textContent = 'Check that all rows have valid credits (> 0) and grade points (0–10).';
+      return;
+    }
+
+    const sgpa  = semPoints / semCredits;
+    const totalCredits = prevCredits + semCredits;
+    const totalPoints  = prevPoints  + semPoints;
+    const cgpa  = totalPoints / totalCredits;
+
+    document.getElementById('sgpa-val').textContent = sgpa.toFixed(2);
+    document.getElementById('sgpa-sub').textContent = `${semPoints.toFixed(1)} pts ÷ ${semCredits} credits`;
+
+    document.getElementById('cgpa-val').textContent = cgpa.toFixed(2);
+    document.getElementById('cgpa-sub').textContent = `${totalPoints.toFixed(1)} pts ÷ ${totalCredits} credits`;
+
+    const results = document.getElementById('results');
+    results.style.display = 'block';
+    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Wire up prev inputs to auto-save
+  document.getElementById('prev-credits').addEventListener('input', saveData);
+  document.getElementById('prev-points').addEventListener('input', saveData);
+
+  loadData();
+</script>
+
+</body>
+</html>
