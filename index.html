@@ -261,15 +261,14 @@
   <div class="prev-row">
     <div class="field">
       <label>Total credits earned so far</label>
-      <input type="number" id="prev-credits" min="0" placeholder="e.g. 90" />
+      <input type="number" id="prev-credits" min="0" placeholder="e.g. 57" />
     </div>
     <div class="field">
-      <label>Total credit × grade points earned so far</label>
-      <input type="number" id="prev-points" min="0" step="0.01" placeholder="e.g. 765.0" />
+      <label>CGPA till last semester</label>
+      <input type="number" id="prev-cgpa" min="0" max="10" step="0.01" placeholder="e.g. 8.26" />
     </div>
   </div>
-  <p style="font-size:0.75rem; color:#6b6b8a; margin-top:0.7rem;">
-    These are the running totals from all previous semesters (shown on your grade card).
+  <p id="prev-points-hint" style="font-size:0.75rem; color:#6b6b8a; margin-top:0.7rem;">
     Leave both as 0 if this is your first semester.
   </p>
 </div>
@@ -353,6 +352,20 @@
     saveData();
   }
 
+  function updatePointsHint() {
+    const credits = parseFloat(document.getElementById('prev-credits').value) || 0;
+    const cgpa    = parseFloat(document.getElementById('prev-cgpa').value)    || 0;
+    const hint    = document.getElementById('prev-points-hint');
+    if (credits > 0 && cgpa > 0) {
+      const pts = Math.round(cgpa * credits);
+      hint.textContent = `Computed previous points: ${cgpa} × ${credits} = ${pts}`;
+      hint.style.color = '#a78bfa';
+    } else {
+      hint.textContent = 'Leave both as 0 if this is your first semester.';
+      hint.style.color = '#6b6b8a';
+    }
+  }
+
   function saveData() {
     const rows = document.querySelectorAll('#course-body tr');
     const courses = Array.from(rows).map(row => ({
@@ -361,9 +374,10 @@
       grade:   row.querySelector('.c-grade').value,
       pts:     row.querySelector('.c-pts').value,
     }));
-    localStorage.setItem('cgpa_courses', JSON.stringify(courses));
+    localStorage.setItem('cgpa_courses',      JSON.stringify(courses));
     localStorage.setItem('cgpa_prev_credits', document.getElementById('prev-credits').value);
-    localStorage.setItem('cgpa_prev_points',  document.getElementById('prev-points').value);
+    localStorage.setItem('cgpa_prev_cgpa',    document.getElementById('prev-cgpa').value);
+    updatePointsHint();
   }
 
   const DEFAULT_COURSES = [
@@ -379,9 +393,10 @@
 
   function loadData() {
     const prevCredits = localStorage.getItem('cgpa_prev_credits');
-    const prevPoints  = localStorage.getItem('cgpa_prev_points');
+    const prevCgpa    = localStorage.getItem('cgpa_prev_cgpa');
     document.getElementById('prev-credits').value = prevCredits ?? '57';
-    document.getElementById('prev-points').value  = prevPoints  ?? '471';
+    document.getElementById('prev-cgpa').value    = prevCgpa    ?? '';
+    updatePointsHint();
 
     const saved = localStorage.getItem('cgpa_courses');
     if (saved) {
@@ -395,7 +410,8 @@
     document.getElementById('error').textContent = '';
 
     const prevCredits = parseFloat(document.getElementById('prev-credits').value) || 0;
-    const prevPoints  = parseFloat(document.getElementById('prev-points').value)  || 0;
+    const prevCgpa    = parseFloat(document.getElementById('prev-cgpa').value)    || 0;
+    const prevPoints  = Math.round(prevCgpa * prevCredits);
 
     const rows = document.querySelectorAll('#course-body tr');
     if (rows.length === 0) {
